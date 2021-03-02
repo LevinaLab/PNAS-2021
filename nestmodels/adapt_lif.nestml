@@ -1,0 +1,76 @@
+"""
+Name: adapt_lif - Adaptive leaky integrate-and-fire neuron with 
+delta-shaped PSCs.
+
+Sends: SpikeEvent
+
+Receives: SpikeEvent, CurrentEvent, DataLoggingRequest
+
+SeeAlso: iaf_psc_alpha, iaf_psc_exp, iaf, iaf_psc_delta_canon
+"""
+neuron adapt_lif:
+
+  state:
+    refr_spikes_buffer mV = 0 mV
+    r integer # counts number of tick during the refractory period
+  end
+
+  initial_values:
+    V_abs mV = 0 mV
+    #function V_m mV = V_abs + E_L # Membrane potential.
+    w pA = 0 pA
+  end
+
+  equations:
+    shape G = delta(t, tau_m)
+    V_abs' = -(V_abs/tau_m) + (1/C_m * (convolve(G, spikes)+ I_e - w))
+    w' = -w/tau_w 
+    
+  end
+  
+
+  parameters:
+    tau_m   ms = 10ms      # Membrane time constant.
+    C_m     pF = 250pF     # Capacity of the membrane
+    t_ref   ms = 2ms       # Duration of refractory period.
+    tau_syn ms = 2ms       # Time constant of synaptic current.
+    E_L     mV = 0mV     # Resting membrane potential.
+    I_e     pA = 0pA       # Constant input current.
+    V_reset mV = 10mV   # Reset potential of the membrane.
+    Theta   mV = 20mV    # Spike threshold.
+    tau_w   ms = 100ms
+    a       real = 1 
+    b pA = 2pA
+    with_refr_input boolean = false # If true, do not discard input during
+#refractory period. Default: false.
+  end
+
+  internals:
+    h ms = resolution()
+    RefractoryCounts integer = steps(t_ref) # refractory time in steps
+  end
+
+  input:
+    spikes pA <- spike
+    I_stim<- current
+  end
+
+  output: spike
+
+update:
+    integrate_odes()
+
+    if r > 0: # refractory
+      r = r - 1 # decrement refractory ticks count
+      V_abs = V_reset
+      
+    elif V_abs >= Theta: # threshold crossing detection
+      w += b
+      r  = RefractoryCounts
+      V_abs = V_reset # clamp potential
+      emit_spike()
+    end
+
+end
+
+end

@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC  -L/home/ovinogradov/.local/lib -lnestutil -lnest -lrandom -lsli -lnestkernel -ltopology -fopenmp /lib/libltdl.so /lib/libreadline.so /lib/libncurses.so /usr/lib/libgsl.so /usr/lib/libgslcblas.so -shared -Wl,-soname,libmyModels.so -o libmyModels.so CMakeFiles/myModels_lib.dir/myModels.cpp.o CMakeFiles/myModels_lib.dir/adapt_lif.cpp.o 

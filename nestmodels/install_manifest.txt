@@ -1,0 +1,6 @@
+/home/ovinogradov/.local/lib/nest/myModels.so
+/home/ovinogradov/.local/lib/nest/libmyModels.so
+/home/ovinogradov/.local/include/myModels.h
+/home/ovinogradov/.local/share/nest/sli/myModels-init.sli
+/home/ovinogradov/.local/share/doc/nest/help/helpindex.hlp
+/home/ovinogradov/.local/share/doc/nest/help/helpindex.html
