@@ -1,4 +1,4 @@
-* Network simulation and analysis for Sukenik et al. 2021
+# Network simulation and analysis for Sukenik et al. 2021
 - ABC fit of adLIF network to inter-burst interval statistics
 - Code for solving to the mean-field equations
 
