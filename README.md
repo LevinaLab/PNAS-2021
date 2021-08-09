@@ -10,6 +10,7 @@ nuki/ - scripts to parse the fitting results
 setup.sh - install NEST and adLIF model on ubuntu 
 
 Paper: https://www.pnas.org/content/118/12/e2018459118
+
 Experimental data is available at:
 https://figshare.com/projects/Neuronal_circuits_overcome_imbalance_in_excitation_and_inhibition_by_adjusting_connection_numbers/88586
 
