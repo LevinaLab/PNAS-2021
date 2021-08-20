@@ -9,7 +9,9 @@ BIC_simuations.py - blocking inhibtion in the fitted network (in silico
 bicuculline application)
 nuki/ - scripts to parse the fitting results
 
-setup.sh - install NEST and adLIF model on ubuntu 
+setup.sh - script to install NEST on ubuntu 
+nestmodel/ - nestml implementation of adLIF model
+
 
 Paper: https://www.pnas.org/content/118/12/e2018459118
 
