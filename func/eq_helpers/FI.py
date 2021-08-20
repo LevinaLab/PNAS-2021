@@ -1,4 +1,4 @@
-# MF-equtions. Following Brunel et al. 2000, Tartaglia Brunel
+# MF-equtions. Following Brunel et al. 2000, Tartaglia & Brunel 2017
 from scipy.integrate import odeint,solve_ivp,ode
 from numpy import arange
 from scipy.optimize import fsolve as fsolve

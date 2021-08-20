@@ -1,5 +1,6 @@
 """
 Module for Approximate Bayesian Computation
+adapted from https://github.com/rcmorehead/simpleabc
 
 """
 from abc import ABCMeta, abstractmethod

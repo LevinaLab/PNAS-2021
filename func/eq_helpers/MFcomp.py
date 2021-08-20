@@ -1,3 +1,5 @@
+
+"""Helper functions to compare mean field with fixed adaptation(seperation of timescales) and network simulations"""
 from func.eq_helpers.FI import *
 import sys
 from func.helpers import *
@@ -16,7 +18,6 @@ from functools import partial
 from multiprocessing import Pool
 from func.eq_helpers.MFcomp import *
 
-"""Helper functions to compare mean Field with fexed adaptation and network simulations"""
 def prepare_data(params, bin_size =20):
     """ 
     minifunction to read the data, detect bursts and calculate the spike

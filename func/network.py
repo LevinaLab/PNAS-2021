@@ -1,7 +1,7 @@
 import nest
 import os
 os.environ['LD_LIBRARY_PATH'] = '/home/ubuntu/.local'
-nest.Install('myModels')
+nest.Install("nestmlmodule")#nest.Install('myModels')
 
 import time
 from numpy import exp
@@ -140,8 +140,10 @@ class adLIFNet(object):
         self.msdrange1 = range(self.master_seed, self.master_seed+self.n_vp)
         self.pyrngs = [ np.random.RandomState(s) for s in self.msdrange1]
         self.msdrange2 = range(self.master_seed+self.n_vp+1, self.master_seed+1+2*self.n_vp)
-        nest.SetKernelStatus({'grng_seed': self.master_seed+self.n_vp,
-                              'rng_seeds' :self.msdrange2}) 
+        #nest.SetKernelStatus({'grng_seed': self.master_seed+self.n_vp,
+        #                      'rng_seeds' :self.msdrange2}) 
+        #Old NEST versions
+        nest.SetKernelStatus({'rng_seed': self.master_seed})
         
     def build(self):
         #Initialization of the parameters of the integrate and fire neuron and the synapses. The parameter of the neuron are stored in a dictionary.
@@ -151,7 +153,8 @@ class adLIFNet(object):
                               'E_L': 0.0,
                               'I_e':self.constantI,
                               'V_reset': self.V_res,
-                              'V_abs': self.V_m,
+                              #'V_abs': self.V_m,
+                              'v': self.V_m,
                               'Theta':self.theta,
                               'with_refr_input':False,
                               'tau_w':self.tau_w,
@@ -186,21 +189,22 @@ class adLIFNet(object):
         self.nodes_ex = nest.Create("adapt_lif",self.NE)
         self.nodes_in = nest.Create("adapt_lif",self.NI)
         self.noise    = nest.Create("poisson_generator")
-        self.espikes  = nest.Create("spike_detector")
+        self.espikes  =nest.Create("spike_recorder")#nest.Create("spike_detector")
         if self.record_vol:
             self.voltmeter = nest.Create("multimeter")
         #self.ispikes  = nest.Create("spike_detector")
         self.nodes_al = self.nodes_ex +self.nodes_in
-        nest.SetStatus(self.espikes,[{"withtime": True,
-                                 "withgid": True,#%(n_i_),
-                                 "to_file": True}])
-            
+        #nest.SetStatus(self.espikes,[{"withtime": True,
+        #                         "withgid": True,#%(n_i_),
+        #                         "to_file": True}])
+         
+        nest.SetStatus(self.espikes,[{"record_to":"ascii"}])
         nest.SetStatus(self.nodes_al, "w",np.random.normal(0,0.5,size = len(self.nodes_al)))#np.ones(len(self.nodes_al))*0.5)    
 #         nest.SetStatus(self.nodes_al, "w", np.ones(len(self.nodes_al))*0.5)    
         if self.record_vol:
             print('record from V_abs')
             nest.SetStatus(self.voltmeter,[{"label": self.simulation+'_voltage',
-                                    'record_from': ['w','V_abs'],
+                                    'record_from': ['w','v'],
                                     'interval':1.,
                                      "withtime": True,
                                      "withgid": True,#%(n_i_),
@@ -213,23 +217,23 @@ class adLIFNet(object):
         """Connect nodes"""
         if self.built ==False:
             raise BuildError('Build the network first')
-        nest.CopyModel("static_synapse","excitatory",{"weight":self.J_ex})
-        nest.CopyModel("static_synapse","inhibitory",{"weight":self.J_in})
-        nest.CopyModel("static_synapse","external",{"weight":self.J_ext})
+        nest.CopyModel("static_synapse","excitatory",{"weight":self.J_ex,'delay':self.delay})
+        nest.CopyModel("static_synapse","inhibitory",{"weight":self.J_in, 'delay':self.delay})
+        nest.CopyModel("static_synapse","external", {"weight":self.J_ext,'delay':self.delay})
 
-        self.syn_dict = {'model': 'excitatory',
-                'delay':self.delay}
-        self.syn_dict_in = {'model': 'inhibitory',
-                'delay': self.delay}
-        self.syn_dict_ext = {'model': 'external',
-                'delay': self.delay}
+        #self.syn_dict = {'model': 'excitatory',
+        #        'delay':self.delay}
+        #self.syn_dict_in = {'model': 'inhibitory',
+        #        'delay': self.delay}
+        #self.syn_dict_ext = {'model': 'external',
+        #        'delay': self.delay}
         
-        nest.Connect(self.noise,self.nodes_ex, syn_spec=self.syn_dict_ext)
+        nest.Connect(self.noise,self.nodes_ex, syn_spec="external")#=self.syn_dict_ext)
 #         if self.i_noise_off==False:
 #             print('in noise connected')
-        nest.Connect(self.noise,self.nodes_in, syn_spec=self.syn_dict_ext)
+        nest.Connect(self.noise,self.nodes_in, syn_spec="external")#self.syn_dict_ext)
 
-        nest.Connect(self.nodes_al[:self.N_rec],self.espikes, syn_spec=self.syn_dict)
+        nest.Connect(self.nodes_al[:self.N_rec],self.espikes, syn_spec="excitatory")#self.syn_dict)
         if self.record_vol:
             nest.Connect(self.voltmeter, self.nodes_al[:self.N_rec])#self.N_rec
 #         print("Connecting network")
@@ -237,12 +241,12 @@ class adLIFNet(object):
 #         print("Excitatory connections")
         self.conn_params_ex = {'rule': 'fixed_indegree', 'indegree': self.KE}
         nest.Connect(self.nodes_ex, self.nodes_ex+self.nodes_in,
-                     self.conn_params_ex, syn_spec =self.syn_dict)
+                     self.conn_params_ex, syn_spec ="excitatory")#self.syn_dict)
 
 #         print("Inhibitory connections")
         self.conn_params_in = {'rule': 'fixed_indegree', 'indegree': self.KI}
         nest.Connect(self.nodes_in, self.nodes_ex+self.nodes_in,
-                     self.conn_params_in, syn_spec =self.syn_dict_in)
+                     self.conn_params_in, syn_spec ="inhibitory")#self.syn_dict_in)
 
     def run(self,stim=0,stim_rate = 0.5,stim_tim = 5000,n_trials = 1):
         """run the simulation

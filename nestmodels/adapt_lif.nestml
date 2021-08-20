@@ -1,33 +1,14 @@
-"""
-Name: adapt_lif - Adaptive leaky integrate-and-fire neuron with 
-delta-shaped PSCs.
-
-Sends: SpikeEvent
-
-Receives: SpikeEvent, CurrentEvent, DataLoggingRequest
-
-SeeAlso: iaf_psc_alpha, iaf_psc_exp, iaf, iaf_psc_delta_canon
-"""
 neuron adapt_lif:
 
   state:
-    refr_spikes_buffer mV = 0 mV
-    r integer # counts number of tick during the refractory period
-  end
-
-  initial_values:
-    V_abs mV = 0 mV
-    #function V_m mV = V_abs + E_L # Membrane potential.
-    w pA = 0 pA
+    v mV = 0 mV    # Membrane potential in mV
+    w pA = 0 pA    # Membrane potential recovery variable
   end
 
   equations:
-    shape G = delta(t, tau_m)
-    V_abs' = -(V_abs/tau_m) + (1/C_m * (convolve(G, spikes)+ I_e - w))
-    w' = -w/tau_w 
-    
+    v' =-(v/tau_m) - (w + I_e)/C_m 
+    w' = -w/ tau_w
   end
-  
 
   parameters:
     tau_m   ms = 10ms      # Membrane time constant.
@@ -42,35 +23,43 @@ neuron adapt_lif:
     a       real = 1 
     b pA = 2pA
     with_refr_input boolean = false # If true, do not discard input during
-#refractory period. Default: false.
+    #refractory period. Default: false.
   end
 
   internals:
-    h ms = resolution()
-    RefractoryCounts integer = steps(t_ref) # refractory time in steps
+    # refractory time in steps
+    RefractoryCounts integer = steps(t_ref)
+    # counts number of tick during the refractory period
+    r integer
   end
 
   input:
-    spikes pA <- spike
-    I_stim<- current
+    spikes mV <- spike
+    #I_e pA <- continuous
   end
 
   output: spike
 
-update:
+  update:
     integrate_odes()
 
-    if r > 0: # refractory
-      r = r - 1 # decrement refractory ticks count
-      V_abs = V_reset
-      
-    elif V_abs >= Theta: # threshold crossing detection
+    if r>0: #refractory
+        r-=1
+        v=V_reset
+    elif v>=Theta:
+        r=RefractoryCounts +1
+        v = V_reset
+        w+=b
+    # add synaptic current
+    else:
+        v += spikes
+    end
+    # threshold crossing
+    if v >= Theta:
+      v = V_reset
       w += b
-      r  = RefractoryCounts
-      V_abs = V_reset # clamp potential
       emit_spike()
     end
-
+   end
 end
 
-end
