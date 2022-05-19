@@ -15,7 +15,7 @@ nestmodel/ - nestml implementation of adLIF model
 
 Paper: https://www.pnas.org/content/118/12/e2018459118
 
-Experimental data is available at:
+Experimental data are available at:
 https://figshare.com/projects/Neuronal_circuits_overcome_imbalance_in_excitation_and_inhibition_by_adjusting_connection_numbers/88586
 
 
