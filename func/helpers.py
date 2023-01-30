@@ -106,6 +106,10 @@ def read_gdf(mypath,simulation,t,threads=4, dirType='new'):
     #the files are stored in flat directory
     # list all files (for multithreading)
         files = [mypath +i for i in listdir(mypath) if simulation in i and 'gdf' in i]#
+        if not files:
+            #catch the .dat extensitons
+            files = [mypath +i for i in listdir(mypath) if simulation in i and
+                     'dat' in i]#
     # concFile = [i for i,f in enumerate(files) if 'all' in f]
     # if len(concFile)==1:
         #reading from one file
